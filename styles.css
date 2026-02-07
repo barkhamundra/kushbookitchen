@@ -56,7 +56,8 @@ body {
   color: #333;
 }
 
-.dropdown:hover .dropdown-content {
+.dropdown:hover .dropdown-content,
+.dropdown:focus-within .dropdown-content {
   display: block;
 }
 
@@ -88,4 +89,104 @@ body {
   width: 300px;
   border-radius: 10px;
   margin-top: 1rem;
+}
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  text-decoration: none; /* Removes underline */
+}
+
+.logo:hover {
+  color: #d2691e; /* Slight color change on hover */
+  transition: 0.3s;
+}
+/* Hamburger menu (hidden on desktop) */
+.hamburger {
+  display: none;
+  font-size: 1.8rem;
+  cursor: pointer;
+  color: white;
+}
+
+/* Mobile styles */
+@media screen and (max-width: 768px) {
+  .nav-links {
+    position: absolute;
+    top: 60px; /* below navbar */
+    left: -100%; /* hidden by default */
+    width: 100%;
+    flex-direction: column;
+    background-color: #ffb347;
+    transition: left 0.3s ease-in-out;
+  }
+
+  .nav-links.show {
+    left: 0;
+  }
+
+  .nav-links li {
+    text-align: center;
+    padding: 1rem 0;
+  }
+
+  .dropdown-content {
+    position: static;
+    background-color: #ffcc99;
+    box-shadow: none;
+    border-radius: 0;
+    display: none; /* hidden by default, shown when toggled */
+  }
+
+  .dropdown-content.show {
+    display: block;
+  }
+
+  .hamburger {
+    display: block; /* show hamburger on mobile */
+  }
+}
+/* Mobile responsive navbar */
+@media screen and (max-width: 768px) {
+  .navbar {
+    flex-direction: column;  /* stack logo, nav-links, and cart vertically */
+    align-items: flex-start; /* left-align items */
+    padding: 0.5rem 1rem;    /* smaller padding */
+    width: 100%;             /* make sure it fits screen */
+    box-sizing: border-box;  /* include padding in width */
+  }
+
+  .logo {
+    margin-bottom: 0.5rem;   /* space below logo */
+  }
+
+  .nav-links {
+    flex-direction: column;  /* stack nav items vertically */
+    width: 100%;             /* full width */
+    padding: 0;              /* remove extra padding */
+  }
+
+  .nav-links li {
+    width: 100%;             /* make each link take full width */
+    text-align: left;
+  }
+
+  .nav-links a {
+    display: block;          /* full clickable area */
+    padding: 0.5rem 0;
+  }
+
+  .dropdown-content {
+    position: static;        /* dropdown items appear below parent */
+    width: 100%;             /* fit screen */
+    box-shadow: none;        /* remove shadow for mobile */
+    padding-left: 1rem;      /* small indent */
+  }
+
+  .cart-icon {
+    margin-top: 0.5rem;
+    width: 100%;             /* make cart full width */
+    text-align: left;
+    padding: 0.5rem 0;
+  }
 }
