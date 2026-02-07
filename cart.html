@@ -124,8 +124,21 @@
       const email = 'orders@khusbookitchen.com';
       const subject = encodeURIComponent('Order from Khusboo Kitchen');
       const body = createEmailBody();
-      window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
-    });
+      emailBtn.addEventListener('click', () => {
+        if (cart.length === 0) {
+          alert("Your cart is empty!");
+          return;
+        }
+
+        const to = 'orders@khusbookitchen.com';
+        const subject = encodeURIComponent('Order from Khusboo Kitchen');
+        const body = createEmailBody();
+
+        const gmailURL = `https://mail.google.com/mail/?view=cm&fs=1&to=${to}&su=${subject}&body=${body}`;
+
+        window.open(gmailURL, '_blank');
+      });
+          });
 
     // Initial render
     renderCart();
