@@ -64,85 +64,79 @@
     <button id="email-order-btn">Send Email to Barkha</button>
   </section>
 
-  <script>
-    // Load cart from localStorage
-    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+<script>
+  // 1. Load cart from localStorage
+  let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-    const cartItemsList = document.getElementById('cart-items');
-    const totalPriceEl = document.getElementById('total-price');
-    const emailBtn = document.getElementById('email-order-btn');
+  const cartItemsList = document.getElementById('cart-items');
+  const totalPriceEl = document.getElementById('total-price');
+  const emailBtn = document.getElementById('email-order-btn');
 
-    // Render the cart items
-    function renderCart() {
-      cartItemsList.innerHTML = '';
-      let total = 0;
+  // 2. Render the cart items
+  function renderCart() {
+    cartItemsList.innerHTML = '';
+    let total = 0;
 
-      cart.forEach((item, index) => {
-        const li = document.createElement('li');
-        li.textContent = `${item.name} - $${item.price.toFixed(2)} `;
+    cart.forEach((item, index) => {
+      const li = document.createElement('li');
+      li.textContent = `${item.name} - $${item.price.toFixed(2)} `;
 
-        // Create trash can delete button
-        const deleteBtn = document.createElement('button');
-        deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
-        deleteBtn.addEventListener('click', () => {
-          removeItem(index);
-        });
-
-        li.appendChild(deleteBtn);
-        cartItemsList.appendChild(li);
-
-        total += item.price;
+      // Create trash can delete button
+      const deleteBtn = document.createElement('button');
+      deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+      deleteBtn.addEventListener('click', () => {
+        removeItem(index);
       });
 
-      totalPriceEl.textContent = `Total: $${total.toFixed(2)}`;
-    }
+      li.appendChild(deleteBtn);
+      cartItemsList.appendChild(li);
 
-    // Remove item from cart
-    function removeItem(index) {
-      cart.splice(index, 1);
-      localStorage.setItem('cart', JSON.stringify(cart));
-      renderCart();
-    }
+      total += item.price;
+    });
 
-    // Generate email body
-    function createEmailBody() {
-      let body = 'Hello Barkha,%0D%0A%0D%0AI would like to place the following order:%0D%0A';
-      cart.forEach(item => {
-        body += `- ${item.name} - $${item.price.toFixed(2)}%0D%0A`;
-      });
-      let total = cart.reduce((sum, item) => sum + item.price, 0);
-      body += `%0D%0ATotal: $${total.toFixed(2)}%0D%0A%0D%0AThank you!`;
-      return body;
-    }
+    totalPriceEl.textContent = `Total: $${total.toFixed(2)}`;
+  }
 
-    // Email button click
-    emailBtn.addEventListener('click', () => {
-      if(cart.length === 0) {
-        alert("Your cart is empty!");
-        return;
-      }
-      const email = 'orders@khusbookitchen.com';
-      const subject = encodeURIComponent('Order from Khusboo Kitchen');
-      const body = createEmailBody();
-      emailBtn.addEventListener('click', () => {
-        if (cart.length === 0) {
-          alert("Your cart is empty!");
-          return;
-        }
-
-        const to = 'orders@khusbookitchen.com';
-        const subject = encodeURIComponent('Order from Khusboo Kitchen');
-        const body = createEmailBody();
-
-        const gmailURL = `https://mail.google.com/mail/?view=cm&fs=1&to=${to}&su=${subject}&body=${body}`;
-
-        window.open(gmailURL, '_blank');
-      });
-          });
-
-    // Initial render
+  // 3. Remove item from cart
+  function removeItem(index) {
+    cart.splice(index, 1);
+    localStorage.setItem('cart', JSON.stringify(cart));
     renderCart();
-  </script>
+    // Also update the global count if updateCartCount exists in script.js
+    if (typeof updateCartCount === "function") updateCartCount();
+  }
+
+  // 4. Generate email body (Plain text, encoded for URL)
+  function createEmailBody() {
+    let body = 'Hello Barkha,\n\nI would like to place the following order:\n';
+    cart.forEach(item => {
+      body += `- ${item.name} - $${item.price.toFixed(2)}\n`;
+    });
+    let total = cart.reduce((sum, item) => sum + item.price, 0);
+    body += `\nTotal: $${total.toFixed(2)}\n\nThank you!`;
+    return encodeURIComponent(body); 
+  }
+
+  // 5. FIXED: Single Click Listener
+  emailBtn.addEventListener('click', () => {
+    if (cart.length === 0) {
+      alert("Your cart is empty!");
+      return;
+    }
+
+    const to = 'orders@khusbookitchen.com';
+    const subject = encodeURIComponent('Order from Khusboo Kitchen');
+    const body = createEmailBody();
+
+    // Using the Gmail Compose URL
+    const gmailURL = `https://mail.google.com/mail/?view=cm&fs=1&to=${to}&su=${subject}&body=${body}`;
+
+    window.open(gmailURL, '_blank');
+  });
+
+  // Initial render on page load
+  renderCart();
+</script>
   <script src="script.js"></script>
 </body>
 </html>
