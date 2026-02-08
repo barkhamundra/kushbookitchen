@@ -7,129 +7,27 @@
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <style>
-    :root {
-      --primary-orange: #ffb347;
-      --soft-cream: #fff8f0;
-      --dark-text: #333;
-    }
-
-    body { background-color: var(--soft-cream); color: var(--dark-text); }
-
-    .cart-section {
-      padding: 2rem;
-      max-width: 800px;
-      margin: 40px auto;
-      background: white;
-      border-radius: 15px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    }
-
+    body { background-color: #fff8f0; color: #333; font-family: sans-serif; }
+    .cart-section { padding: 2rem; max-width: 800px; margin: 40px auto; background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
     #cart-items { list-style: none; padding: 0; }
+    #cart-items li { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #eee; }
+    .delete-btn { border: none; background: transparent; color: #ff4d4d; cursor: pointer; font-size: 1.1rem; }
+    .order-footer { margin-top: 30px; text-align: right; }
+    
+    /* The main Place Order button */
+    #place-order-btn { background: #ffb347; color: white; border: none; padding: 15px 40px; border-radius: 30px; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
 
-    #cart-items li {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px 0;
-      border-bottom: 1px solid #eee;
-    }
-
-    .delete-btn {
-      border: none;
-      background: transparent;
-      color: #ff4d4d;
-      font-size: 1.2rem;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-
-    .delete-btn:hover { transform: scale(1.2); }
-
-    .order-footer {
-      margin-top: 30px;
-      text-align: right;
-    }
-
-    #email-order-btn {
-      background: var(--primary-orange);
-      color: white;
-      border: none;
-      padding: 15px 40px;
-      border-radius: 30px;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 1.1rem;
-      transition: background 0.3s;
-    }
-
-    #email-order-btn:hover { background: #e69a30; }
-
-    /* Modal Overlay */
-    #order-modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.7);
-      z-index: 1000;
-      backdrop-filter: blur(4px);
-    }
-
-    /* Modal Box */
-    .modal-card {
-      background: white;
-      width: 90%;
-      max-width: 400px;
-      margin: 15vh auto;
-      padding: 30px;
-      border-radius: 20px;
-      text-align: center;
-      position: relative;
-    }
-
-    .modal-card input {
-      width: 100%;
-      padding: 12px;
-      margin: 20px 0;
-      border: 2px solid #eee;
-      border-radius: 10px;
-      box-sizing: border-box;
-      font-size: 1rem;
-    }
-
-    #confirm-order-btn {
-      background: #4CAF50;
-      color: white;
-      border: none;
-      padding: 12px 25px;
-      border-radius: 10px;
-      cursor: pointer;
-      width: 100%;
-      font-size: 1rem;
-      font-weight: bold;
-    }
+    /* Modal Styling */
+    #order-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; backdrop-filter: blur(4px); }
+    .modal-card { background: white; width: 90%; max-width: 400px; margin: 20vh auto; padding: 30px; border-radius: 20px; text-align: center; }
+    .modal-card input { width: 100%; padding: 12px; margin: 20px 0; border: 2px solid #eee; border-radius: 10px; box-sizing: border-box; }
+    #confirm-btn { background: #4CAF50; color: white; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; }
   </style>
 </head>
 <body>
 
   <nav class="navbar">
     <a href="index.html" class="logo">Khusboo Kitchen</a>
-    <ul class="nav-links">
-      <li class="dropdown">
-        <a href="#">Menu ▾</a>
-        <ul class="dropdown-content">
-          <li><a href="appetizers.html">Appetizers</a></li>
-          <li><a href="entrees.html">Entrees</a></li>
-          <li><a href="breads.html">Breads</a></li>
-          <li><a href="curries.html">Curries</a></li>
-          <li><a href="desserts.html">Desserts</a></li>
-        </ul>
-      </li>
-      <li><a href="about.html">About Us</a></li>
-      <li><a href="connect.html">Connect with Barkha</a></li>
-    </ul>
     <div class="cart-icon" onclick="window.location.href='cart.html'">
       🛒 View Cart (<span id="cart-count">0</span>)
     </div>
@@ -137,124 +35,82 @@
 
   <section class="cart-section">
     <h2>Your Cart</h2>
-    <ul id="cart-items">
-      </ul>
-    
+    <ul id="cart-items"></ul>
     <div class="order-footer">
       <h3 id="total-price">Total: $0.00</h3>
-      <button id="email-order-btn">Place Order</button>
+      <button id="place-order-btn">Place Order</button>
     </div>
   </section>
 
   <div id="order-modal">
     <div class="modal-card" id="modal-content">
-      <h3>Complete Your Order</h3>
-      <p>Enter your email so Barkha can contact you for payment & delivery.</p>
-      
-      <input type="email" id="user-email" placeholder="yourname@email.com" required>
-      
-      <button id="confirm-order-btn">Finish Order</button>
-      <button onclick="document.getElementById('order-modal').style.display='none'" 
-              style="background:none; border:none; color:#888; margin-top:15px; cursor:pointer;">
-        Cancel
-      </button>
+      <h3>Finish Your Order</h3>
+      <p>Enter your email so Barkha can contact you:</p>
+      <input type="email" id="user-email" placeholder="email@example.com" required>
+      <button id="confirm-btn">Place Order Now</button>
+      <p onclick="document.getElementById('order-modal').style.display='none'" style="margin-top:15px; cursor:pointer; color:gray; font-size:0.9rem;">Cancel</p>
     </div>
   </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       let cart = JSON.parse(localStorage.getItem('cart')) || [];
-      const cartItemsList = document.getElementById('cart-items');
-      const totalPriceEl = document.getElementById('total-price');
-      const cartCountEl = document.getElementById('cart-count');
-      const emailBtn = document.getElementById('email-order-btn');
+      const itemsList = document.getElementById('cart-items');
+      const totalEl = document.getElementById('total-price');
+      const countEl = document.getElementById('cart-count');
       const modal = document.getElementById('order-modal');
-      const confirmBtn = document.getElementById('confirm-order-btn');
-      const modalContent = document.getElementById('modal-content');
 
-      function renderCart() {
-        cartItemsList.innerHTML = '';
+      function render() {
+        itemsList.innerHTML = cart.length ? '' : '<p>Your cart is empty.</p>';
         let total = 0;
-
-        if (cart.length === 0) {
-          cartItemsList.innerHTML = "<p style='text-align:center; color:#888;'>Your cart is empty.</p>";
-          emailBtn.style.display = 'none';
-        } else {
-          emailBtn.style.display = 'inline-block';
-          cart.forEach((item, index) => {
-            const li = document.createElement('li');
-            li.innerHTML = `
-              <span><strong>${item.name}</strong></span>
-              <span>$${item.price.toFixed(2)} 
-                <button class="delete-btn" onclick="removeItem(${index})">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </span>
-            `;
-            cartItemsList.appendChild(li);
-            total += item.price;
-          });
-        }
-        totalPriceEl.textContent = `Total: $${total.toFixed(2)}`;
-        cartCountEl.textContent = cart.length;
+        cart.forEach((item, i) => {
+          const li = document.createElement('li');
+          li.innerHTML = `<span>${item.name}</span> <span>$${item.price.toFixed(2)} <button class="delete-btn" onclick="remove(${i})"><i class="fas fa-trash"></i></button></span>`;
+          itemsList.appendChild(li);
+          total += item.price;
+        });
+        totalEl.textContent = `Total: $${total.toFixed(2)}`;
+        countEl.textContent = cart.length;
       }
 
-      window.removeItem = (index) => {
-        cart.splice(index, 1);
-        localStorage.setItem('cart', JSON.stringify(cart));
-        renderCart();
+      window.remove = (i) => { cart.splice(i, 1); localStorage.setItem('cart', JSON.stringify(cart)); render(); };
+
+      // 1. CLICK PLACE ORDER -> SHOW POPUP
+      document.getElementById('place-order-btn').onclick = () => {
+        if(cart.length === 0) return alert("Empty cart!");
+        modal.style.display = 'block';
       };
 
-      // Show Modal
-      emailBtn.addEventListener('click', () => {
-        modal.style.display = 'block';
-      });
+      // 2. CLICK CONFIRM -> SEND SILENTLY
+      document.getElementById('confirm-btn').onclick = function() {
+        const email = document.getElementById('user-email').value;
+        if(!email.includes('@')) return alert("Enter a valid email!");
 
-      // Handle Silent Send
-      confirmBtn.addEventListener('click', () => {
-        const userEmail = document.getElementById('user-email').value;
-        if (!userEmail || !userEmail.includes('@')) return alert("Please enter a valid email!");
+        this.disabled = true;
+        this.textContent = "Processing...";
 
-        confirmBtn.disabled = true;
-        confirmBtn.textContent = "Sending...";
-
-        const orderDetails = cart.map(item => `${item.name} ($${item.price})`).join(", ");
-
-        // THE BACKGROUND SEND (Fetch)
-        fetch("https://formspree.io/f/YOUR_FORM_ID_HERE", {
+        // Replace 'YOUR_ID' with your Formspree ID
+        fetch("https://formspree.io/f/YOUR_ID", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            customerEmail: userEmail,
-            items: orderDetails,
-            total: totalPriceEl.textContent
+            customer: email,
+            items: cart.map(item => item.name).join(", "),
+            total: totalEl.textContent
           })
-        })
-        .then(response => {
-          if (response.ok) {
-            // SUCCESS UI CHANGE
-            modalContent.innerHTML = `
-              <div style="padding:20px;">
-                <i class="fas fa-check-circle" style="font-size:3rem; color:#4CAF50;"></i>
-                <h2 style="margin-top:15px;">Order Placed!</h2>
-                <p>Barkha has received your request.</p>
-                <p>She will contact you at <b>${userEmail}</b>.</p>
-                <button onclick="window.location.href='index.html'" 
-                        style="background:#ffb347; color:white; border:none; padding:10px 20px; border-radius:10px; margin-top:20px; cursor:pointer;">
-                  Return Home
-                </button>
-              </div>
-            `;
-            localStorage.removeItem('cart');
-          } else {
-            alert("Error sending order. Please try again.");
-            confirmBtn.disabled = false;
-            confirmBtn.textContent = "Finish Order";
-          }
+        }).then(() => {
+          // 3. SHOW SUCCESS MESSAGE INSTEAD OF OPENING GMAIL
+          document.getElementById('modal-content').innerHTML = `
+            <div style="padding:20px;">
+              <h2 style="color:#4CAF50;">Order Placed! 🍛</h2>
+              <p>Barkha has been notified. She will email you at <b>${email}</b> soon.</p>
+              <button onclick="window.location.href='index.html'" style="margin-top:20px; padding:10px 20px; cursor:pointer; background:#ffb347; border:none; color:white; border-radius:10px;">Back to Menu</button>
+            </div>`;
+          localStorage.removeItem('cart');
         });
-      });
+      };
 
-      renderCart();
+      render();
     });
   </script>
 </body>
