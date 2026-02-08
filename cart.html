@@ -7,12 +7,113 @@
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <style>
-    #cart-items li { margin-bottom: 10px; font-size: 16px; }
-    #cart-items button { border: none; background: transparent; color: #ff4d4d; font-size: 16px; cursor: pointer; margin-left: 10px; }
-    #email-order-btn { margin-top: 20px; padding: 10px 20px; font-size: 16px; cursor: pointer; }
+    :root {
+      --primary-orange: #ffb347;
+      --soft-cream: #fff8f0;
+      --dark-text: #333;
+    }
+
+    body { background-color: var(--soft-cream); color: var(--dark-text); }
+
+    .cart-section {
+      padding: 2rem;
+      max-width: 800px;
+      margin: 40px auto;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+
+    #cart-items { list-style: none; padding: 0; }
+
+    #cart-items li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .delete-btn {
+      border: none;
+      background: transparent;
+      color: #ff4d4d;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .delete-btn:hover { transform: scale(1.2); }
+
+    .order-footer {
+      margin-top: 30px;
+      text-align: right;
+    }
+
+    #email-order-btn {
+      background: var(--primary-orange);
+      color: white;
+      border: none;
+      padding: 15px 40px;
+      border-radius: 30px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: background 0.3s;
+    }
+
+    #email-order-btn:hover { background: #e69a30; }
+
+    /* Modal Overlay */
+    #order-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      z-index: 1000;
+      backdrop-filter: blur(4px);
+    }
+
+    /* Modal Box */
+    .modal-card {
+      background: white;
+      width: 90%;
+      max-width: 400px;
+      margin: 15vh auto;
+      padding: 30px;
+      border-radius: 20px;
+      text-align: center;
+      position: relative;
+    }
+
+    .modal-card input {
+      width: 100%;
+      padding: 12px;
+      margin: 20px 0;
+      border: 2px solid #eee;
+      border-radius: 10px;
+      box-sizing: border-box;
+      font-size: 1rem;
+    }
+
+    #confirm-order-btn {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 10px;
+      cursor: pointer;
+      width: 100%;
+      font-size: 1rem;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
+
   <nav class="navbar">
     <a href="index.html" class="logo">Khusboo Kitchen</a>
     <ul class="nav-links">
@@ -36,98 +137,125 @@
 
   <section class="cart-section">
     <h2>Your Cart</h2>
-    <ul id="cart-items"></ul>
-    <p id="total-price"></p>
-    <button id="email-order-btn">Place Order</button>
+    <ul id="cart-items">
+      </ul>
+    
+    <div class="order-footer">
+      <h3 id="total-price">Total: $0.00</h3>
+      <button id="email-order-btn">Place Order</button>
+    </div>
   </section>
 
-  <div id="order-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000;">
-    <div id="modal-content" style="background:white; width:300px; margin:100px auto; padding:20px; border-radius:10px; text-align:center; color: #333;">
-      <h3>Almost Done!</h3>
-      <p>Enter your email so Barkha can contact you:</p>
-      <input type="email" id="user-email" placeholder="yourname@email.com" required style="width:90%; padding:10px; margin-bottom:10px; border: 1px solid #ccc; border-radius: 5px;">
-      <button id="confirm-order-btn" style="background:#4CAF50; color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer; width: 100%;">Finish Order</button>
-      <button id="cancel-modal" style="background:none; border:none; color:grey; cursor:pointer; display:block; margin:10px auto;">Cancel</button>
+  <div id="order-modal">
+    <div class="modal-card" id="modal-content">
+      <h3>Complete Your Order</h3>
+      <p>Enter your email so Barkha can contact you for payment & delivery.</p>
+      
+      <input type="email" id="user-email" placeholder="yourname@email.com" required>
+      
+      <button id="confirm-order-btn">Finish Order</button>
+      <button onclick="document.getElementById('order-modal').style.display='none'" 
+              style="background:none; border:none; color:#888; margin-top:15px; cursor:pointer;">
+        Cancel
+      </button>
     </div>
   </div>
 
-  <script src="script.js"></script> <script>
-    // 1. Load cart
-    let cart = JSON.parse(localStorage.getItem('cart')) || [];
-    const cartItemsList = document.getElementById('cart-items');
-    const totalPriceEl = document.getElementById('total-price');
-    const emailBtn = document.getElementById('email-order-btn');
-    const modal = document.getElementById('order-modal');
-    const confirmBtn = document.getElementById('confirm-order-btn');
-    const cancelBtn = document.getElementById('cancel-modal');
-    const modalContent = document.getElementById('modal-content');
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      let cart = JSON.parse(localStorage.getItem('cart')) || [];
+      const cartItemsList = document.getElementById('cart-items');
+      const totalPriceEl = document.getElementById('total-price');
+      const cartCountEl = document.getElementById('cart-count');
+      const emailBtn = document.getElementById('email-order-btn');
+      const modal = document.getElementById('order-modal');
+      const confirmBtn = document.getElementById('confirm-order-btn');
+      const modalContent = document.getElementById('modal-content');
 
-    function renderCart() {
-      cartItemsList.innerHTML = '';
-      let total = 0;
-      cart.forEach((item, index) => {
-        const li = document.createElement('li');
-        li.textContent = `${item.name} - $${item.price.toFixed(2)} `;
-        const deleteBtn = document.createElement('button');
-        deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
-        deleteBtn.onclick = () => removeItem(index);
-        li.appendChild(deleteBtn);
-        cartItemsList.appendChild(li);
-        total += item.price;
+      function renderCart() {
+        cartItemsList.innerHTML = '';
+        let total = 0;
+
+        if (cart.length === 0) {
+          cartItemsList.innerHTML = "<p style='text-align:center; color:#888;'>Your cart is empty.</p>";
+          emailBtn.style.display = 'none';
+        } else {
+          emailBtn.style.display = 'inline-block';
+          cart.forEach((item, index) => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+              <span><strong>${item.name}</strong></span>
+              <span>$${item.price.toFixed(2)} 
+                <button class="delete-btn" onclick="removeItem(${index})">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </span>
+            `;
+            cartItemsList.appendChild(li);
+            total += item.price;
+          });
+        }
+        totalPriceEl.textContent = `Total: $${total.toFixed(2)}`;
+        cartCountEl.textContent = cart.length;
+      }
+
+      window.removeItem = (index) => {
+        cart.splice(index, 1);
+        localStorage.setItem('cart', JSON.stringify(cart));
+        renderCart();
+      };
+
+      // Show Modal
+      emailBtn.addEventListener('click', () => {
+        modal.style.display = 'block';
       });
-      totalPriceEl.textContent = `Total: $${total.toFixed(2)}`;
-      // Sync the (0) count in navbar
-      const countEl = document.getElementById('cart-count');
-      if (countEl) countEl.textContent = cart.length;
-    }
 
-    function removeItem(index) {
-      cart.splice(index, 1);
-      localStorage.setItem('cart', JSON.stringify(cart));
-      renderCart();
-    }
+      // Handle Silent Send
+      confirmBtn.addEventListener('click', () => {
+        const userEmail = document.getElementById('user-email').value;
+        if (!userEmail || !userEmail.includes('@')) return alert("Please enter a valid email!");
 
-    // Modal Logic
-    emailBtn.addEventListener('click', () => {
-      if (cart.length === 0) return alert("Your cart is empty!");
-      modal.style.display = 'block';
-    });
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = "Sending...";
 
-    cancelBtn.onclick = () => modal.style.display = 'none';
+        const orderDetails = cart.map(item => `${item.name} ($${item.price})`).join(", ");
 
-    confirmBtn.addEventListener('click', () => {
-      const userEmail = document.getElementById('user-email').value;
-      if (!userEmail || !userEmail.includes('@')) return alert("Please enter a valid email!");
-
-      const orderDetails = cart.map(item => `${item.name} ($${item.price})`).join(", ");
-      
-      // Update UI to show loading
-      confirmBtn.disabled = true;
-      confirmBtn.textContent = "Sending...";
-
-      fetch("https://formspree.io/f/YOUR_UNIQUE_ID", {
+        // THE BACKGROUND SEND (Fetch)
+        fetch("https://formspree.io/f/YOUR_FORM_ID_HERE", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-              email: userEmail,
-              message: `New Order: ${orderDetails}`,
-              total: totalPriceEl.textContent
+            customerEmail: userEmail,
+            items: orderDetails,
+            total: totalPriceEl.textContent
           })
-      })
-      .then(response => {
+        })
+        .then(response => {
           if (response.ok) {
-              modalContent.innerHTML = `<h3>Order Placed! 🍛</h3><p>Barkha will email you at <b>${userEmail}</b> soon.</p>`;
-              localStorage.removeItem('cart'); 
-              setTimeout(() => { window.location.href = "index.html"; }, 4000);
+            // SUCCESS UI CHANGE
+            modalContent.innerHTML = `
+              <div style="padding:20px;">
+                <i class="fas fa-check-circle" style="font-size:3rem; color:#4CAF50;"></i>
+                <h2 style="margin-top:15px;">Order Placed!</h2>
+                <p>Barkha has received your request.</p>
+                <p>She will contact you at <b>${userEmail}</b>.</p>
+                <button onclick="window.location.href='index.html'" 
+                        style="background:#ffb347; color:white; border:none; padding:10px 20px; border-radius:10px; margin-top:20px; cursor:pointer;">
+                  Return Home
+                </button>
+              </div>
+            `;
+            localStorage.removeItem('cart');
           } else {
-              alert("Something went wrong. Please try again!");
-              confirmBtn.disabled = false;
-              confirmBtn.textContent = "Finish Order";
+            alert("Error sending order. Please try again.");
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = "Finish Order";
           }
+        });
       });
-    });
 
-    renderCart();
+      renderCart();
+    });
   </script>
 </body>
 </html>
