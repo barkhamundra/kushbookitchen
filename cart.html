@@ -5,36 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Your Cart - Khusboo Kitchen</title>
   <link rel="stylesheet" href="styles.css" />
-  <!-- Font Awesome for trash can icon -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <style>
-    /* Optional: style the delete buttons nicely */
-    #cart-items li {
-      margin-bottom: 10px;
-      font-size: 16px;
-    }
-    #cart-items button {
-      border: none;
-      background: transparent;
-      color: #ff4d4d;
-      font-size: 16px;
-      cursor: pointer;
-      margin-left: 10px;
-    }
-    #email-order-btn {
-      margin-top: 20px;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-    }
+    #cart-items li { margin-bottom: 10px; font-size: 16px; }
+    #cart-items button { border: none; background: transparent; color: #ff4d4d; font-size: 16px; cursor: pointer; margin-left: 10px; }
+    #email-order-btn { margin-top: 20px; padding: 10px 20px; font-size: 16px; cursor: pointer; }
   </style>
 </head>
 <body>
   <nav class="navbar">
-    <!-- Logo first -->
     <a href="index.html" class="logo">Khusboo Kitchen</a>
-
-    <!-- Navigation links -->
     <ul class="nav-links">
       <li class="dropdown">
         <a href="#">Menu ▾</a>
@@ -49,94 +29,105 @@
       <li><a href="about.html">About Us</a></li>
       <li><a href="connect.html">Connect with Barkha</a></li>
     </ul>
-
-    <!-- Cart button last -->
     <div class="cart-icon" onclick="window.location.href='cart.html'">
       🛒 View Cart (<span id="cart-count">0</span>)
     </div>
   </nav>
 
-
   <section class="cart-section">
     <h2>Your Cart</h2>
     <ul id="cart-items"></ul>
     <p id="total-price"></p>
-    <button id="email-order-btn">Send Email to Barkha</button>
+    <button id="email-order-btn">Place Order</button>
   </section>
 
-<script>
-  // 1. Load cart from localStorage
-  let cart = JSON.parse(localStorage.getItem('cart')) || [];
+  <div id="order-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000;">
+    <div id="modal-content" style="background:white; width:300px; margin:100px auto; padding:20px; border-radius:10px; text-align:center; color: #333;">
+      <h3>Almost Done!</h3>
+      <p>Enter your email so Barkha can contact you:</p>
+      <input type="email" id="user-email" placeholder="yourname@email.com" required style="width:90%; padding:10px; margin-bottom:10px; border: 1px solid #ccc; border-radius: 5px;">
+      <button id="confirm-order-btn" style="background:#4CAF50; color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer; width: 100%;">Finish Order</button>
+      <button id="cancel-modal" style="background:none; border:none; color:grey; cursor:pointer; display:block; margin:10px auto;">Cancel</button>
+    </div>
+  </div>
 
-  const cartItemsList = document.getElementById('cart-items');
-  const totalPriceEl = document.getElementById('total-price');
-  const emailBtn = document.getElementById('email-order-btn');
+  <script src="script.js"></script> <script>
+    // 1. Load cart
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const cartItemsList = document.getElementById('cart-items');
+    const totalPriceEl = document.getElementById('total-price');
+    const emailBtn = document.getElementById('email-order-btn');
+    const modal = document.getElementById('order-modal');
+    const confirmBtn = document.getElementById('confirm-order-btn');
+    const cancelBtn = document.getElementById('cancel-modal');
+    const modalContent = document.getElementById('modal-content');
 
-  // 2. Render the cart items
-  function renderCart() {
-    cartItemsList.innerHTML = '';
-    let total = 0;
-
-    cart.forEach((item, index) => {
-      const li = document.createElement('li');
-      li.textContent = `${item.name} - $${item.price.toFixed(2)} `;
-
-      // Create trash can delete button
-      const deleteBtn = document.createElement('button');
-      deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
-      deleteBtn.addEventListener('click', () => {
-        removeItem(index);
+    function renderCart() {
+      cartItemsList.innerHTML = '';
+      let total = 0;
+      cart.forEach((item, index) => {
+        const li = document.createElement('li');
+        li.textContent = `${item.name} - $${item.price.toFixed(2)} `;
+        const deleteBtn = document.createElement('button');
+        deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+        deleteBtn.onclick = () => removeItem(index);
+        li.appendChild(deleteBtn);
+        cartItemsList.appendChild(li);
+        total += item.price;
       });
-
-      li.appendChild(deleteBtn);
-      cartItemsList.appendChild(li);
-
-      total += item.price;
-    });
-
-    totalPriceEl.textContent = `Total: $${total.toFixed(2)}`;
-  }
-
-  // 3. Remove item from cart
-  function removeItem(index) {
-    cart.splice(index, 1);
-    localStorage.setItem('cart', JSON.stringify(cart));
-    renderCart();
-    // Also update the global count if updateCartCount exists in script.js
-    if (typeof updateCartCount === "function") updateCartCount();
-  }
-
-  // 4. Generate email body (Plain text, encoded for URL)
-  function createEmailBody() {
-    let body = 'Hello Barkha,\n\nI would like to place the following order:\n';
-    cart.forEach(item => {
-      body += `- ${item.name} - $${item.price.toFixed(2)}\n`;
-    });
-    let total = cart.reduce((sum, item) => sum + item.price, 0);
-    body += `\nTotal: $${total.toFixed(2)}\n\nThank you!`;
-    return encodeURIComponent(body); 
-  }
-
-  // 5. FIXED: Single Click Listener
-  emailBtn.addEventListener('click', () => {
-    if (cart.length === 0) {
-      alert("Your cart is empty!");
-      return;
+      totalPriceEl.textContent = `Total: $${total.toFixed(2)}`;
+      // Sync the (0) count in navbar
+      const countEl = document.getElementById('cart-count');
+      if (countEl) countEl.textContent = cart.length;
     }
 
-    const to = 'orders@khusbookitchen.com';
-    const subject = encodeURIComponent('Order from Khusboo Kitchen');
-    const body = createEmailBody();
+    function removeItem(index) {
+      cart.splice(index, 1);
+      localStorage.setItem('cart', JSON.stringify(cart));
+      renderCart();
+    }
 
-    // Using the Gmail Compose URL
-    const gmailURL = `https://mail.google.com/mail/?view=cm&fs=1&to=${to}&su=${subject}&body=${body}`;
+    // Modal Logic
+    emailBtn.addEventListener('click', () => {
+      if (cart.length === 0) return alert("Your cart is empty!");
+      modal.style.display = 'block';
+    });
 
-    window.open(gmailURL, '_blank');
-  });
+    cancelBtn.onclick = () => modal.style.display = 'none';
 
-  // Initial render on page load
-  renderCart();
-</script>
-  <script src="script.js"></script>
+    confirmBtn.addEventListener('click', () => {
+      const userEmail = document.getElementById('user-email').value;
+      if (!userEmail || !userEmail.includes('@')) return alert("Please enter a valid email!");
+
+      const orderDetails = cart.map(item => `${item.name} ($${item.price})`).join(", ");
+      
+      // Update UI to show loading
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = "Sending...";
+
+      fetch("https://formspree.io/f/YOUR_UNIQUE_ID", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+              email: userEmail,
+              message: `New Order: ${orderDetails}`,
+              total: totalPriceEl.textContent
+          })
+      })
+      .then(response => {
+          if (response.ok) {
+              modalContent.innerHTML = `<h3>Order Placed! 🍛</h3><p>Barkha will email you at <b>${userEmail}</b> soon.</p>`;
+              localStorage.removeItem('cart'); 
+              setTimeout(() => { window.location.href = "index.html"; }, 4000);
+          } else {
+              alert("Something went wrong. Please try again!");
+              confirmBtn.disabled = false;
+              confirmBtn.textContent = "Finish Order";
+          }
+      });
+    });
+
+    renderCart();
+  </script>
 </body>
 </html>
